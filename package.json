@@ -12,5 +12,9 @@
   "bugs": {
     "url": "https://github.com/react-chunky/react-cloud-chunky/issues"
   },
-  "homepage": "https://github.com/react-chunky/react-cloud-chunky#readme"
+  "homepage": "https://github.com/react-chunky/react-cloud-chunky#readme",
+  "dependencies": {
+    "firebase-admin": "^5.1.0",
+    "firebaseline": "^0.2.0"
+  }
 }

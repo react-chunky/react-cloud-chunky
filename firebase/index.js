@@ -16,15 +16,14 @@ function initialize(config) {
   })
 }
 
-function save(data, logs) {
+function save(data) {
     // Generate some defaults for each item
     const defaults = () => ({
       timestamp: new Date().getTime()
     })
 
     return Promise.all(data.map(item => {
-      firebase.database().ref(item.path).set(Object.assign({}, defaults(), item.data)).
-               then(() => `Saved to ${item.path}`)
+      return firebase.database().ref(item.path).set(Object.assign({}, defaults(), item.data))
     }))
 }
 

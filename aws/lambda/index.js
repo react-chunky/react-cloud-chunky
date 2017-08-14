@@ -3,7 +3,4 @@
 const handler = require('./handler')
 const loader = require('./loader')
 
-module.exports = {
-    handler,
-    loader
-}
+module.exports = Object.assign({}, handler, loader)

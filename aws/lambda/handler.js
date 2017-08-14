@@ -1,11 +1,11 @@
 'use strict'
 
 const loader = require('./loader')
-const firebase = require('../firebase')
+const firebase = require('../../firebase')
 
 function validate(event, chunk) {
   // Look up the required fields for this function
-  const fields = requiredFields(chunk)
+  const fields = loader.loadRequiredFields(chunk)
 
   fields.forEach(req => {
     if (!event.body[req]) {
@@ -22,66 +22,37 @@ function doneWithError(callback, error) {
   callback(error)
 }
 
-function handleAsyncEvent(event) {
-  // Look up the service chunk
-  const chunk = loadChunk()
+function handleEvent(handler) {
+  return (event, context, callback) => {
+    try {
+      // Make sure we wait until the event is processed
+      context.callbackWaitsForEmptyEventLoop = false;    
 
-  // Validate the event first
-  validate(event, chunk)
+      // Look up the service chunk
+      const chunk = loader.loadChunk()
 
-  // Look up the post id
-  const postId = event.body.id
+      // Load the configuration
+      const config = loader.loadSecureCloudConfig()
 
-  // Look up the site
-  const idPrefix = "main"
+      // Validate the event first
+      validate(event, chunk)
+    
+      // Handle the event
+      handler(event, chunk, config).
 
-  // Keep track of the content
-  const content = event.body.content
+      // The event finished successfully
+      then(data => done(callback, data)).
 
-  // Remove the content from the main data to be saved
-  delete event.body.content
-
-  // Prepare the path and data to save
-  const data = Object.assign({}, event.body)
-  const path = `posts/${idPrefix}_${postId}`
-
-  // Load the Firebase configuration
-  const firebaseConfig = loader.loadSecureFirebaseConfig()
-
-  // Initialize Firebase if necessary
-  firebase.initialize(firebaseConfig)
-
-  // Setup a log chain
-  const logs = [`Getting ready to save to firebase`]
-
-  // Save this post to the Firebase Database
-  return firebase.save([{ path, data }], logs)
-}
-
-function onEvent(event, context, callback) {
-  try {
-    // Make sure we wait until the event is processed
-    context.callbackWaitsForEmptyEventLoop = false;    
-
-    // Handle the event
-    handleAsyncEvent(event).
-
-    // The event finished successfully
-    then(logs => done(callback, logs)).
-
-    // The event finished with an error
-    catch(error => { throw error })
-  } catch (e) {
-    // Something failed, either at validation,
-    // before the handler could complete or during execution
-    doneWithError(callback, e)
+      // The event finished with an error
+      catch(error => { throw error })
+    } catch (e) {
+      // Something failed, either at validation,
+      // before the handler could complete or during execution
+      doneWithError(callback, e)
+    }
   }
 }
 
 module.exports = {
-  done,
-  onEvent,
-  validate,
-  doneWithError,
-  handleAsyncEvent
+  handleEvent
 }

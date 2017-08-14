@@ -1,15 +1,19 @@
 'use strict'
 
-function loadEnv() {
-  return require('./chunky.json')
+function loadFile(file) {
+  return require(`${process.cwd()}/${file}`)
 }
 
-function loadConfig() {
-  return require('./chunky.json')
+function loadManifest() {
+  return loadFile('chunky.json')
 }
 
 function loadSecureConfig() {
-  return require('./.chunky.json')
+  return loadFile('.chunky.json')
+}
+
+function loadSecureCloudConfig() {
+    return loadSecureConfig().cloud[loadEnv()]
 }
 
 function loadInfo() {
@@ -26,7 +30,7 @@ function loadInfo() {
 }
 
 function loadChunk() {
-  const chunk = require('./chunk.json')
+  const chunk = loadFile("chunk.json")
  
    if (!chunk || !chunk.service) {
     throw new Error("Missing chunk manifest")
@@ -50,17 +54,12 @@ function loadEnv() {
     return (process.env.CHUNKY_ENV || 'dev')
 }
 
-function loadSecureCloudConfig() {
-    return loadSecureConfig().cloud[loadEnv()]
-}
-
 module.exports = {
   loadEnv,
   loadInfo,
   loadChunk,
-  loadConfig,
+  loadManifest,
   loadSecureConfig,
   loadRequiredFields,
-  loadSecureCloudConfig,
-  loadSecureFirebaseConfig
+  loadSecureCloudConfig
 }
